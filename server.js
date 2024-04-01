@@ -1,27 +1,42 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
+const session = require('express-session');
+const passport = require('passport');
+const routes = require('./routes');
+const passportConfig = require('./config/passportConfig');
 
-// Import route modules
-const authRoutes = require('./routes/auth');
-const profileRoutes = require('./routes/profiles');
-const preferencesRoutes = require('./routes/preferences');
-const matchesRoutes = require('./routes/matches');
-const apartmentsRoutes = require('./routes/apartments');
-const chatroomsRoutes = require('./routes/chatrooms');
-const messagesRoutes = require('./routes/messages');
-const adminRoutes = require('./routes/admin');
+// Passport configuration
+passportConfig(passport);
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Failed to connect to MongoDB', err));
+
+// Session configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // Mount routes
-app.use('/auth', authRoutes);
-app.use('/profiles', profileRoutes);
-app.use('/preferences', preferencesRoutes);
-app.use('/matches', matchesRoutes);
-app.use('/apartments', apartmentsRoutes);
-app.use('/chatrooms', chatroomsRoutes);
-app.use('/messages', messagesRoutes);
-app.use('/admin', adminRoutes);
+app.use('/', routes);
 
 // Start the server
-app.listen(PORT = 3000, () => {
-  console.log(`Server is running on port ${PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
