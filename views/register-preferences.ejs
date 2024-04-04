@@ -1,0 +1,21 @@
+<h2>Register - Step 3</h2>
+<form action="/auth/register/preferences?_method=PUT" method="POST">
+  <div class="form-group">
+    <label for="importanceOfPrivacy">Importance of Privacy</label>
+    <input type="number" class="form-control" id="importanceOfPrivacy" name="importanceOfPrivacy" min="1" max="5" required>
+  </div>
+  <div class="form-group">
+    <label for="importanceOfPersonalSpaceInSharedAreas">Importance of Personal Space in Shared Areas</label>
+    <input type="number" class="form-control" id="importanceOfPersonalSpaceInSharedAreas" name="importanceOfPersonalSpaceInSharedAreas" min="1" max="5" required>
+  </div>
+  <!-- Add more preference fields -->
+  <div class="form-group">
+    <label for="budget">Budget</label>
+    <input type="number" class="form-control" id="budget" name="budget" required>
+  </div>
+  <div class="form-group">
+    <label for="address">Address</label>
+    <input type="text" class="form-control" id="address" name="address" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>

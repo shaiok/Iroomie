@@ -1,41 +1,81 @@
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const User = require('../models/userModel');
+const Question = require('../models/questionModel');
+const generateToken = require('../utils/generateToken');
 
-// Register a new user
+// Register a new user (single-step registration)
+const registerUser = async (userData) => {
+  const { username, email, password, fullName, age, gender, bio, preferences } = userData;
+
+  // Check if the user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new Error('User already exists');
+  }
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create bio and preference Question documents
+  const bioQuestion = new Question({ ...bio });
+  const savedBioQuestion = await bioQuestion.save();
+
+  const preferenceQuestion = new Question({ ...preferences.importance });
+  const savedPreferenceQuestion = await preferenceQuestion.save();
+
+  // Create a new user
+  const newUser = new User({
+    username,
+    email,
+    password: hashedPassword,
+    fullName,
+    age,
+    gender,
+    bio: savedBioQuestion._id,
+    preferences: {
+      importance: savedPreferenceQuestion._id,
+      budget: preferences.budget,
+      address: preferences.address,
+    }
+  });
+
+  // Save the user to the database
+  await newUser.save();
+};
+
 exports.registerUser = async (req, res) => {
   try {
-    const { username, email, password, fullName, age, gender } = req.body;
+    const userData = req.body;
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+    await registerUser(userData);
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-      fullName,
-      age,
-      gender,
-    });
-    console.log(newUser);
-
-    // Save the user to the database
-    await newUser.save();
-
-    res.status(201).json({ message: 'User registered successfully' });
+    res.json({ message: 'Registration successful' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(400).json({ message: err.message });
   }
 };
+
+exports.registerUsers = async (req, res) => {
+  try {
+    const users = req.body; // Assuming req.body.users is an array of user objects  
+    console.log("users " + users);
+
+    // Array to store promises for saving users
+    const savePromises = users.map(user => registerUser(user));
+
+    // Execute all save promises concurrently
+    await Promise.all(savePromises);
+
+    res.json({ message: 'Registration successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
 
 // Login user
 exports.loginUser = (req, res, next) => {
@@ -65,3 +105,4 @@ exports.logoutUser = (req, res) => {
   req.logout();
   res.json({ message: 'Logout successful' });
 };
+

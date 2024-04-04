@@ -1,13 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser } = require('../controllers/authController');
-const verifyToken = require('../middleware/authMiddleware/verifyToken');
+const { registerUser, registerUsers, loginUser } = require('../controllers/authController');
+const questionsMap = require('../utils/questionsMap');
+
+// New route for single-step registration
+router.route('/register')
+  .get((_req, res) => {
+    res.render('register', questionsMap);
+  })
+  .post(registerUser);
+
+  router.post('/register/users', registerUsers);
 
 
-// Register a new user
-router.post('/register', registerUser); //verifyToken,
-
-// User login
-router.post('/login', loginUser); //verifyToken
+router.route('/login')
+  .get((_req, res) => {
+    res.render('login');
+  })
+  .post(loginUser);
 
 module.exports = router;
