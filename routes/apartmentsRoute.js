@@ -1,21 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { ensureAuthenticated } = require('../middleware/authMiddleware/ensureAuthenticated');
+const { getApartment, updateApartment, associateUserToApartment, deleteApartment } = require('../controllers/apartmentsController');
 
-// Create a new apartment listing
-router.post('/', /* createApartment controller */);
+router.route('/:apartmentId')
+    .get(getApartment)
+    .put( updateApartment) //ensureAuthenticated,
+    .delete( deleteApartment); //ensureAuthenticated,
 
-// Get a list of apartment listings
-router.get('/', (req, res) => {
-    res.send('Hello iroomie!');
-});
-
-// Get details of a specific apartment
-router.get('/:apartmentId', /* getApartment controller */);
-
-// Update an apartment listing
-router.put('/:apartmentId', /* updateApartment controller */);
-
-// Delete an apartment listing
-router.delete('/:apartmentId', /* deleteApartment controller */);
+router.route('/:apartmentId/associate/:userId')
+    .post( associateUserToApartment) //ensureAuthenticated,
+    .delete( associateUserToApartment) //ensureAuthenticated,
 
 module.exports = router;

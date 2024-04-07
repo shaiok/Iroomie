@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authRoutes = require('./authRoute');
-const profileRoutes = require('./profiles');
+const userRoutes = require('./usersRoute');
 const preferencesRoutes = require('./preferencesRoute');
 const matchesRoutes = require('./matchesRoute');
 const apartmentsRoutes = require('./apartmentsRoute');
@@ -10,7 +10,7 @@ const messagesRoutes = require('./messagesRoute');
 const adminRoutes = require('./adminRoute');
 
 router.use('/auth', authRoutes);
-router.use('/profiles', profileRoutes);
+router.use('/users', userRoutes);
 router.use('/preferences', preferencesRoutes);
 router.use('/matches', matchesRoutes);
 router.use('/apartments', apartmentsRoutes);

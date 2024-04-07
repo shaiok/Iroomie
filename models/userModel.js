@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
   },
   likes: { type: [String], default: [] },
   dislikes: { type: [String], default: [] },
-  matches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Apartment' }]
+  matches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Apartment' }],
+  apartmentAssociate: { type: mongoose.Schema.Types.ObjectId , ref: 'Apartment' },
 });
 
 

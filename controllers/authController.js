@@ -12,10 +12,7 @@ const registerUser = async (userData) => {
   if (existingUser) {
     throw new Error('User already exists');
   }
-  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
-  if (!passwordRegex.test(password)) {
-    throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
-  }
+
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -81,17 +78,13 @@ const registerApartment = async (apartmentData) => {
 
   const { username, email, password, fullName, age, gender } = apartmentData.user;
   const { geoLocation, address, rent, amenities, bedrooms, bathrooms, about, bio, importance } = apartmentData.apartment;
-  
+
   // Check if the user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error('User already exists');
   }
 
-  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
-  if (!passwordRegex.test(password)) {
-    throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
-  }
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -110,7 +103,6 @@ const registerApartment = async (apartmentData) => {
     age,
     gender
   });
-  await newUser.save();
 
   const newApartment = new Apartment({
     geoLocation,
@@ -120,11 +112,13 @@ const registerApartment = async (apartmentData) => {
     bedrooms,
     bathrooms,
     about,
-    bio : savedBioQuestion,
-    importance : savedImportanceQuestion
+    bio: savedBioQuestion,
+    importance: savedImportanceQuestion
   });
   newApartment.existimgRoommates.push(newUser)
+  newUser.apartmentAssociate = newApartment._id;
   // Save the newApartment to the database
+  await newUser.save();
   await newApartment.save();
 };
 
@@ -146,7 +140,7 @@ exports.registerApartment = async (req, res) => {
 exports.registerApartments = async (req, res) => {
   try {
     const apartments = req.body; // Assuming req.body.users is an array of user objects  
-    
+
     // Array to store promises for saving users
     const savePromises = apartments.map(apartment => registerApartment(apartment));
 
@@ -162,17 +156,16 @@ exports.registerApartments = async (req, res) => {
 
 // Login user
 exports.loginUser = (req, res, next) => {
-    // Store user information in the session
+  // Store user information in the session
+  req.session.user = {
+    id: req.user._id,
+    email: req.user.email,
+    apartmentAssociate: req.user.apartmentAssociate || '',
+  };
 
-    req.session.user = {
-      id: req.user._id,
-      email: req.user.email,
-      // Add other relevant user information
-    };
+  console.log(req.session.user);
 
-    console.log(req.session.user);
-  
-    res.json({ message: 'Login successful' });
+  res.json({ message: 'Login successful' });
 };
 
 // Logout user
