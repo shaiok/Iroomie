@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const passport = require('passport');
 const User = require('../models/userModel');
 const Question = require('../models/questionModel');
 const Apartment = require('../models/apartmentModel');
@@ -13,7 +12,10 @@ const registerUser = async (userData) => {
   if (existingUser) {
     throw new Error('User already exists');
   }
-
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+  }
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -60,7 +62,6 @@ exports.registerUser = async (req, res) => {
 exports.registerUsers = async (req, res) => {
   try {
     const users = req.body; // Assuming req.body.users is an array of user objects  
-    console.log("users " + users);
 
     // Array to store promises for saving users
     const savePromises = users.map(user => registerUser(user));
@@ -87,6 +88,10 @@ const registerApartment = async (apartmentData) => {
     throw new Error('User already exists');
   }
 
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+  }
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -138,27 +143,36 @@ exports.registerApartment = async (req, res) => {
 };
 
 
+exports.registerApartments = async (req, res) => {
+  try {
+    const apartments = req.body; // Assuming req.body.users is an array of user objects  
+    
+    // Array to store promises for saving users
+    const savePromises = apartments.map(apartment => registerApartment(apartment));
+
+    // Execute all save promises concurrently
+    await Promise.all(savePromises);
+
+    res.json({ message: 'Registration successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
+  }
+};
+
 // Login user
 exports.loginUser = (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
+    // Store user information in the session
 
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    req.session.user = {
+      id: req.user._id,
+      email: req.user.email,
+      // Add other relevant user information
+    };
 
-    req.login(user, (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-
-      res.json({ message: 'Login successful' });
-    });
-  })(req, res, next);
+    console.log(req.session.user);
+  
+    res.json({ message: 'Login successful' });
 };
 
 // Logout user
