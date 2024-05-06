@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const questionsSchema = require('./questionModel');
+
 
 const apartmentSchema = new mongoose.Schema({
     existimgRoommates: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -12,8 +14,8 @@ const apartmentSchema = new mongoose.Schema({
     bedrooms: Number,
     bathrooms: Number,
     about: String,
-    bio: { type: mongoose.Schema.Types.ObjectId, ref: 'questionsSchema' },
-    importance: { type: mongoose.Schema.Types.ObjectId, ref: 'questionsSchema' },
+    bio: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
+    importance: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
     likes: { type: [String], default: [] },
     dislikes: { type: [String], default: [] },
     matches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]

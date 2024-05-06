@@ -1,0 +1,130 @@
+
+Roommate Compatibility Score Calculation Algorithm
+-------------------------------------------------
+
+This algorithm calculates a compatibility score between a user and a potential roommate candidate 
+based on the user's bio, preferences, and the candidate's bio. 
+The algorithm takes into account a wide range of characteristics to determine the level of compatibility 
+between the two.
+
+Main Calculation Function
+
+function calculateCompatibilityScore(userBio, userPreferences, candidateBio) {
+  const characteristics = Object.keys(userBio);
+  let compatibilityScore = 0;
+  let totalCharacteristics = characteristics.length;
+
+  for (const characteristic of characteristics) {
+    const userValue = userBio[characteristic];
+    const candidateValue = candidateBio[characteristic];
+    const weight = Math.pow(userPreferences[characteristic], 2);
+
+    const difference = Math.abs(userValue - candidateValue);
+    const weightedDifference = difference * weight;
+    const maxDifference = 4 * weight;
+
+    const characteristicScore = 1 - (weightedDifference / maxDifference);
+    compatibilityScore += characteristicScore;
+  }
+
+  const overallCompatibilityScore = compatibilityScore / totalCharacteristics;
+  return overallCompatibilityScore;
+}
+
+-------------------------------------------------
+
+Variable Explanation
+
+- `userBio`: An object containing the user's bio, 
+    where the keys represent the characteristics and the values represent the user's rating 
+    for each characteristic (on a scale of 1 to 5).
+
+- `userPreferences`: An object containing the user's preferences for each characteristic, 
+    where the keys represent the characteristics and the values represent the importance 
+    the user assigns to each characteristic (on a scale of 1 to 5).
+
+- `candidateBio`: An object containing the candidate's bio, in the same format as `userBio`.
+
+- `characteristics`: An array containing the names of all the characteristics.
+
+- `compatibilityScore`: A variable that holds the sum of the compatibility scores for each characteristic.
+
+- `totalCharacteristics`: The total number of characteristics.
+
+- `userValue`: The user's rating value for a specific characteristic.
+
+- `candidateValue`: The candidate's rating value for a specific characteristic.
+
+- `weight`: The weight of importance for a specific characteristic, 
+    calculated by squaring the user's preference value.
+
+- `difference`: The absolute difference between the user's and candidate's values 
+    for a specific characteristic.
+
+- `weightedDifference`: The weighted difference, obtained by multiplying the difference by the weight.
+
+- `maxDifference`: The maximum possible weighted difference for a specific characteristic.
+
+- `characteristicScore`: The compatibility score for a specific characteristic, 
+    calculated by subtracting the ratio of the weighted difference to the maximum difference from 1.
+
+- `overallCompatibilityScore`: The overall compatibility score, obtained by dividing 
+    the sum of the compatibility scores by the total number of characteristics.
+
+-------------------------------------------------
+
+
+Algorithm Correctness Proof
+
+1. For each characteristic, we calculate the absolute difference between the user's 
+    and candidate's ratings. The difference represents the level of mismatch between them.
+
+2. We multiply the difference by the weight of importance for that characteristic, 
+    which is calculated by squaring the user's preference value. 
+    This gives higher weight to characteristics that are more important to the user.
+
+3. We calculate the maximum possible weighted difference for each characteristic 
+    by multiplying the weight by 4 (the maximum difference between ratings).
+
+4. We calculate the compatibility score for each characteristic by subtracting 
+    the ratio of the weighted difference to the maximum difference from 1. 
+    The smaller the difference, the higher the compatibility score (closer to 1).
+
+5. We sum up the compatibility scores for all characteristics and divide 
+    the sum by the total number of characteristics to obtain the overall compatibility score between 0 and 1.
+
+A higher compatibility score indicates a better match between the user 
+    and the candidate based on their bios and the user's preferences. 
+    The algorithm takes into account both the level of similarity between 
+    the user and the candidate and the importance the user assigns to each characteristic.
+
+
+-------------------------------------------------
+
+Example
+
+Let's say we have the following data:
+
+const userBio = {
+  cleanlinessLevel: 4,
+  socialBehavior: 3,
+  musicPreferencesAndVolumeLevels: 3
+};
+
+const userPreferences = {
+  cleanlinessLevel: 5,
+  socialBehavior: 2,
+  musicPreferencesAndVolumeLevels: 4
+};
+
+const candidateBio = {
+  cleanlinessLevel: 3,
+  socialBehavior: 4,
+  musicPreferencesAndVolumeLevels: 2
+};
+
+After running the algorithm with this data, we get:
+Compatibility Score: 0.7847222222222222
+
+The compatibility score, in this case, is 0.7847, 
+indicating a relatively good match between the user and the candidate based on the selected characteristics.

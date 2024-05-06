@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const questionsSchema = require('./questionModel');
+
 
 const userSchema = new mongoose.Schema({
   username: String,
@@ -8,9 +10,9 @@ const userSchema = new mongoose.Schema({
   age: Number,
   gender: { type: String, enum: ['male', 'female'] },
   about: String,
-  bio: { type: mongoose.Schema.Types.ObjectId, ref: 'questionsSchema' },
+  bio: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
   preferences: {
-    importance: { type: mongoose.Schema.Types.ObjectId, ref: 'questionsSchema' },
+    importance: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
     budget: Number,
     address: String
   },
