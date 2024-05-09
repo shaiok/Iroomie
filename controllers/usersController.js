@@ -74,3 +74,56 @@ exports.getMatchingSuggestions = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+exports.associateUserToApartment = async (req, res) => {
+  try {
+    const { userId, apartmentId } = req.params;
+    const { action } = req.query;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const apartment = await Apartment.findById(apartmentId);
+    if (!apartment) {
+      return res.status(404).json({ message: 'Apartment not found' });
+    }
+
+    switch (action) {
+      case 'like':
+        if (user.likes.includes(apartment._id)) {
+          return res.status(400).json({ message: 'Already liked' });
+        }
+        if (user.dislikes.includes(apartment._id)) {
+          user.dislikes.pull(apartment._id);
+        }
+        user.likes.push(apartment._id);
+        break;
+      case 'dislike':
+        if (user.dislikes.includes(apartment._id)) {
+          return res.status(400).json({ message: 'Already disliked' });
+        }
+        if (user.likes.includes(apartment._id)) {
+          user.likes.pull(apartment._id);
+        }
+        user.dislikes.push(apartment._id);
+        break;
+      case 'unlike':
+        if (!user.likes.includes(apartment._id)) {
+          return res.status(400).json({ message: 'Not liked' });
+        }
+        user.likes.pull(apartment._id);
+        break;
+      case 'message':
+        // Start conversation
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid action' });
+    }
+
+    await user.save();
+    return res.json({ message: 'Action successful' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
