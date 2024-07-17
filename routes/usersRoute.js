@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getUser, updateUser, deleteUser , getMatchingSuggestions , associateUserToApartment} = require('../controllers/usersController');
+const { getUser, updateUser, deleteUser , getMatchingSuggestions , associateUserToApartment, getAllUsers} = require('../controllers/usersController');
+
+
+router.route('/').get( getAllUsers) 
 
 router.route('/:userId')
     .get(getUser)

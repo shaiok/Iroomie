@@ -2,6 +2,19 @@ const User = require('../models/userModel');
 const Apartment = require('../models/apartmentModel');
 const calculateCompatibilityScore = require('../utils/matchingAlgorithm');
 
+
+exports.getAllUsers = async (req, res) => {
+
+  try {
+    
+    const users = await User.find({ 'userType': 'roommate' });
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 exports.getUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -87,6 +100,8 @@ exports.associateUserToApartment = async (req, res) => {
     if (!apartment) {
       return res.status(404).json({ message: 'Apartment not found' });
     }
+
+    http://dsgsdgsdg/dsdsgsdgsd/?action=like
 
     switch (action) {
       case 'like':

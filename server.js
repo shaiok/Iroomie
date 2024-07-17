@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
-const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
@@ -25,6 +25,8 @@ db.once("open", () => {
 })
 
 // Session configuration
+app.use(cors());
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -36,20 +38,18 @@ app.use(
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.set('view engine', 'ejs');
-app.use(expressLayouts);
-app.use(express.static('public'));
-// Mount routes
 app.use('/', routes);
+
 
 // Start the server
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+

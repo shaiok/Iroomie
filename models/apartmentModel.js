@@ -1,27 +1,46 @@
-const mongoose = require('mongoose');
-const questionsSchema = require('./questionModel');
-
+const mongoose = require("mongoose");
 
 const apartmentSchema = new mongoose.Schema({
-    existimgRoommates: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    geoLocation: {
-        type: { type: String, enum: ['Point'], default: 'Point' },
-        coordinates: { type: [Number], default: [0, 0] }
+  userInfo: {
+    fullName: String,
+    email: String,
+    password: String,
+    userType: String,
+  },
+  questionnaire: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
+
+  apartmentInfo: {
+    address: {
+      address: String,
+      position: [Number, Number],
     },
-    address: String,
+    floorNumber: Number,
     rent: Number,
-    amenities: [String],
     bedrooms: Number,
     bathrooms: Number,
+    size: Number,
+    leaseLength: String,
+    amenities: [String],
+    nearbyPlaces: [String],
     about: String,
-    bio: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
-    importance: { type: mongoose.Schema.Types.ObjectId, ref: questionsSchema },
-    likes: { type: [String], default: [] },
-    dislikes: { type: [String], default: [] },
-    matches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    images: [String],
+    roommates : Number,
+    roommatesName : [String],
+    details: {
+      heating: Boolean,
+      parking: Boolean,
+      balcony: Boolean,
+      furnished: Boolean,
+      elevator: Boolean,
+      petFriendly: Boolean,
+      smokingAllowed: Boolean,
+    },
+  },
+  existingRoommates: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  likes: { type: [String], default: [] },
+  dislikes: { type: [String], default: [] },
+  matches: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
-
-const Apartment = mongoose.model('Apartment', apartmentSchema);
-
+const Apartment = mongoose.model("Apartment", apartmentSchema);
 module.exports = Apartment;

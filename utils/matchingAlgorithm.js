@@ -88,6 +88,7 @@ const userBio = {
     willingnessToShareHouseholdChores: 4,
     importanceOfPersonalTimeForHobbies: 3
   };
+
   
   const userPreferences = {
     smokingFrequency: 5,

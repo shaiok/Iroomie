@@ -1,35 +1,38 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const passport = require('passport');
+const passport = require("passport");
+const upload = require("../middleware/multer");
 
-const { registerUser, registerUsers, registerApartment, registerApartments, loginUser, logoutUser } = require('../controllers/authController');
-const { passwordAuthenticated } = require('../middleware/authMiddleware/passwordAuthenticated');
-
-const questionsMap = require('../utils/questionsMap');
-
-// New route for single-step registration
-router.route('/register/user')
-  .get((_req, res) => { res.render('register', questionsMap) })
-  .post( registerUser); //passwordAuthenticated,
-
-router.post('/register/users', registerUsers);
-
+const {
+  registerUser,
+  registerApartment,
+  loginUser,
+  logoutUser,
+  bulkRegister
+} = require("../controllers/authController");
 
 // New route for single-step registration
-router.route('/register/apartment')
-  .get((_req, res) => { res.render('register', questionsMap) })
-  .post( registerApartment); //passwordAuthenticated,
+router.post("/register/user", upload.array('images', 5), registerUser); 
 
-router.post('/register/apartments', registerApartments)
+// New route for single-step registration
+// router.route("/register/apartment").post(registerApartment);
+router.post("/register/apartment", upload.array('images', 5), registerApartment);
 
+router.post('/register/bulk', bulkRegister);
 
-router.route('/login')
-    .get((_req, res) => { res.render('login') })
-    .post(passport.authenticate('local',{ failureFlash: true, failureRedirect: '/admin/login' }), loginUser );
+router
+  .route("/login")
+  .get((_req, res) => {
+    res.render("login");
+  })
+  .post(
+    passport.authenticate("local", {
+      failureFlash: true,
+      failureRedirect: "/admin/login",
+    }),
+    loginUser
+  );
 
-
-
-router.get('/logout', logoutUser);
-
+router.get("/logout", logoutUser);
 
 module.exports = router;

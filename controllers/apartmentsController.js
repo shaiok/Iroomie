@@ -1,6 +1,17 @@
 const Apartment = require('../models/apartmentModel');
 const User = require('../models/userModel');
 
+
+exports.allApartments = async (req, res) => {
+  try {
+    const apartments = await Apartment.find();
+    res.json(apartments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 exports.getApartment = async (req, res) => {
   try {
     const { apartmentId } = req.params;
