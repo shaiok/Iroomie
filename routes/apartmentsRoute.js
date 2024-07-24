@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {
-  ensureAuthenticated,
-} = require("../middleware/authMiddleware/ensureAuthenticated");
+
 const {
   allApartments,
   getApartment,
@@ -15,12 +13,12 @@ router.route("/").get(allApartments);
 router
   .route("/:apartmentId")
   .get(getApartment)
-  .put(updateApartment) //ensureAuthenticated,
-  .delete(deleteApartment); //ensureAuthenticated,
+  .put(updateApartment) 
+  .delete(deleteApartment); 
 
 router
   .route("/:apartmentId/associate/:userId")
-  .post(associateUserToApartment) //ensureAuthenticated,
-  .delete(associateUserToApartment); //ensureAuthenticated,
+  .post(associateUserToApartment) 
+  .delete(associateUserToApartment); 
 
 module.exports = router;

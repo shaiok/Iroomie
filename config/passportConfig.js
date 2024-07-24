@@ -1,48 +1,22 @@
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
-const User = require('../models/userModel');
+// config/passportConfig.js
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-module.exports = (passport) => {
-  passport.use(
-    new LocalStrategy(
-      { usernameField: 'email' },
-      async (email, password, done) => {
-        try {
-          // Find the user by email
-          const user = await User.findOne({ email });
-
-          // If the user doesn't exist, return an error
-          if (!user) {
-            return done(null, false, { message: 'Invalid credentials' });
-          }
-
-          // Compare the provided password with the stored hashed password
-          const isMatch = await bcrypt.compare(password, user.password);
-
-          // If the passwords don't match, return an error
-          if (!isMatch) {
-            return done(null, false, { message: 'Invalid credentials' });
-          }
-
-          // If the credentials are valid, return the user
-          return done(null, user);
-        } catch (err) {
-          return done(err);
-        }
-      }
-    )
-  );
+module.exports = function(passport) {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    // The user data will be handled in the googleAuthCallback in authController
+    return done(null, profile);
+  }));
 
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user);
   });
 
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await User.findById(id);
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
+  passport.deserializeUser((obj, done) => {
+    done(null, obj);
   });
 };

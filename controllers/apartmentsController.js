@@ -1,5 +1,5 @@
 const Apartment = require('../models/apartmentModel');
-const User = require('../models/userModel');
+const User = require('../models/roommateModel');
 
 
 exports.allApartments = async (req, res) => {

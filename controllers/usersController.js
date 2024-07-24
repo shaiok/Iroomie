@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const User = require('../models/roommateModel');
 const Apartment = require('../models/apartmentModel');
 const calculateCompatibilityScore = require('../utils/matchingAlgorithm');
 

@@ -25,13 +25,20 @@ db.once("open", () => {
 })
 
 // Session configuration
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true
+}));
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   })
 );
 
@@ -46,6 +53,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 
+// Add a catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log(`Received request for ${req.originalUrl}`);
+  res.status(404).send('Route not found');
+});
 
 // Start the server
 const port = process.env.PORT || 3001;

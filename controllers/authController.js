@@ -1,140 +1,106 @@
-const bcrypt = require("bcrypt");
+// controllers/authController.js
 const User = require("../models/userModel");
-const Question = require("../models/questionModel");
+const Roommate = require("../models/roommateModel");
 const Apartment = require("../models/apartmentModel");
+const Question = require("../models/questionModel");
+const {format} = require('date-fns');
+
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
-exports.loginUser = (req, res) => {
-  req.session.user = {
-    id: req.user._id,
-    email: req.user.email,
-    apartmentAssociate: req.user.apartmentAssociate || "",
-  };
-  res.json({ message: "Login successful" });
-};
-
-exports.logoutUser = (req, res) => {
-  req.logout();
-  res.json({ message: "Logout successful" });
-};
-
-exports.registerApartment = async (req, res) => {
+// authController.js
+exports.googleAuthCallback = async (req, res) => {
+  const { id, displayName, emails, photos } = req.user;
   try {
-    const data = JSON.parse(req.body.data);
-    const { registerInfo, userType, questionnaireAnswers, additionalInfo } =
-      data;
+    const user = await User.findOne({ email: emails[0].value });
 
-    if (!registerInfo || !registerInfo.email) {
-      return res.status(400).json({ message: "Email is required" });
+    if (!user) {
+      req.session.userRegitration = {
+        fullName: displayName || emails[0].value.split("@")[0],
+        email: emails[0].value,
+        googleId: id,
+        picture: photos[0]?.value,
+      };
+      res.redirect(`${process.env.FRONTEND_URL}/complete-signup`);
+    } else {
+      req.session.user = user;
+      req.session.profile = user.profile;
+      res.redirect(`${process.env.FRONTEND_URL}/`);
     }
-
-    const existingUser = await User.findOne({
-      "userInfo.email": registerInfo.email,
-    });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const imageUrls =
-      req.files && req.files.length > 0
-        ? await uploadToCloudinary(req.files)
-        : [];
-
-    const hashedPassword = await bcrypt.hash(registerInfo.password, 10);
-    const savedQuestionnaire = await new Question(questionnaireAnswers).save();
-
-    const newUser = await new User({
-      userInfo: {
-        fullName: registerInfo.fullName,
-        email: registerInfo.email,
-        password: hashedPassword,
-      },
-      userType: 'apartment',
-    }).save();
-
-    const newApartment = await new Apartment({
-      userInfo: newUser._id,
-      questionnaire: savedQuestionnaire._id,
-      apartmentInfo: {
-        address: {
-          address: additionalInfo.overview.address.address,
-          position: additionalInfo.overview.address.position,
-        },
-        floorNumber: Number(additionalInfo.overview.floorNumber),
-        rent: Number(additionalInfo.overview.rent),
-        bedrooms: Number(additionalInfo.overview.bedrooms),
-        bathrooms: Number(additionalInfo.overview.bathrooms),
-        size: Number(additionalInfo.overview.size),
-        leaseLength: additionalInfo.overview.leaseLength,
-        roommates: additionalInfo.overview.roommates,
-        roommatesName: additionalInfo.overview.roommatesName,
-        amenities: additionalInfo.amenities,
-        nearbyPlaces: additionalInfo.nearbyPlaces,
-        about: additionalInfo.about,
-        details: additionalInfo.details,
-        images: imageUrls,
-      },
-      existingRoommates: [newUser._id],
-    }).save();
-
-    newUser.apartmentAssociate = newApartment._id;
-    await newUser.save();
-
-    res.status(201).json({
-      message: "Registration successful",
-      userId: newUser._id,
-      apartmentId: newApartment._id,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: err.message });
+  } catch (error) {
+    console.error(error);
+    res.redirect(`${process.env.FRONTEND_URL}/auth`);
   }
 };
 
-exports.registerUser = async (req, res) => {
-  try {
-    const data = JSON.parse(req.body.data);
-    const { userInfo, userType, questionnaireAnswers, additionalInfo } = data;
-
-    const existingUser = await User.findOne({
-      "userInfo.email": userInfo.email,
-    });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+exports.getCurrentUser = (req, res) => {
+  if (req.session.user) {
+    const userType = req.session.user.userType;
+    if (userType === 'roommate') {
+      Roommate.findById(req.session.profile)
+        .populate("questionnaire")
+        .then((roommate) => {
+          res.json({ user: req.session.user, profile: roommate });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(400).json({ message: err.message });
+        });
+    } else if (userType === 'apartment') {
+      Apartment.findById(req.session.profile)
+        .populate("questionnaire")
+        .then((apartment) => {
+          res.json({ user: req.session.user, profile: apartment });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(400).json({ message: err.message });
+        });
     }
+  } else {
+    res.status(401).json({ message: "Not authenticated" });
+  }
+};
 
-    const imageUrl =
-      req.files && req.files.length > 0
-        ? await uploadToCloudinary(req.files[0])
-        : null;
-    const hashedPassword = await bcrypt.hash(userInfo.password, 10);
-    const savedQuestionnaire = await new Question(questionnaireAnswers).save();
+exports.completeRoommateRegistration = async (req, res) => {
+  try {
+    const { questionnaireAnswers, personalInfo, interests, social } = req.body;
+    const { fullName, email, googleId, picture } = req.session.userRegitration;
 
-    const newRoommate = await new User({
-      image: imageUrl,
-      userType : 'roommate', 
-      userInfo: {
-        fullName: userInfo.fullName,
-        email: userInfo.email,
-        password: hashedPassword,
-      },
+    const user = new User({
+      fullName,
+      email,
+      googleId,
+      userType: "roommate",
+      picture,
+    });
+    await user.save();
+
+    const parsedQuestionnaire = JSON.parse(questionnaireAnswers);
+    const parsedPersonalInfo = JSON.parse(personalInfo);
+    const parsedInterests = JSON.parse(interests);
+    const parsedSocial = JSON.parse(social);
+    const imageUrl = req.files ? await uploadToCloudinary(req.files) : null;
+
+    const savedQuestionnaire = await new Question(parsedQuestionnaire).save();
+
+    const newRoommate = await new Roommate({
+      user: user._id,
       questionnaire: savedQuestionnaire._id,
-      personalInfo: {
-        fullName: userInfo.fullName,
-        age: additionalInfo.age,
-        gender: additionalInfo.gender,
-        from: additionalInfo.from,
-        occupation: additionalInfo.occupation,
-        education: additionalInfo.education,
-        hobbies: additionalInfo.hobbies,
-        socialMedia: additionalInfo.socialMedia,
-        availability: additionalInfo.availability,
-        about: additionalInfo.about,
+      personalInfo: { ...parsedPersonalInfo, name: fullName },
+      interests: parsedInterests,
+      social: {
+        ...parsedSocial,
+        profileImage: imageUrl[0],
       },
     }).save();
 
+    user.profile = newRoommate._id;
+    imageUrl && (user.picture = imageUrl[0]);
+    await user.save();
+
     res.status(201).json({
-      message: "Roommate registration successful",
+      message: "Roommate registration completed successfully",
+      userId: user._id,
       roommateId: newRoommate._id,
     });
   } catch (err) {
@@ -143,111 +109,147 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-exports.bulkRegister = async (req, res) => {
+exports.completeApartmentRegistration = async (req, res) => {
   try {
-    console.log("Received data:", JSON.stringify(req.body, null, 2)); // Log the received data
+    const { questionnaireAnswers, info, amenities, details } = req.body;
 
-    const { apartments, roommates } = req.body;
+console.log(req.session.userRegitration);
+    const { fullName = 'user' , email, googleId, picture } = req.session.userRegitration;
 
-    if (!apartments || !Array.isArray(apartments)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid or missing apartments data" });
-    }
 
-    if (!roommates || !Array.isArray(roommates)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid or missing roommates data" });
-    }
 
-    const registeredApartments = [];
-    const registeredRoommates = [];
+    const user = new User({
+      fullName,
+      email,
+      googleId,
+      userType: "apartment",
+      picture,
+    });
+    await user.save();
 
-    // Register apartments
-    for (const apartmentData of apartments) {
-      const { userInfo, questionnaireAnswers, apartmentInfo, images } =
-        apartmentData;
+    const parsedQuestionnaire = JSON.parse(questionnaireAnswers);
+    const parsedInfo = JSON.parse(info);
+    const parsedAmenities = JSON.parse(amenities);
+    const parsedDetails = JSON.parse(details);
 
-      const hashedPassword = await bcrypt.hash(userInfo.password, 10);
-      const savedQuestionnaire = await new Question(
-        questionnaireAnswers
-      ).save();
+    const imageUrls = req.files ? await uploadToCloudinary(req.files) : [];
 
-      const newUser = await new User({
-        userInfo: {
-          fullName: userInfo.fullName,
-          email: userInfo.email,
-          password: hashedPassword,
+    const savedQuestionnaire = await new Question(parsedQuestionnaire).save();
+
+    const newApartment = await new Apartment({
+      user: user._id,
+      questionnaire: savedQuestionnaire._id,
+      info: {
+        ...parsedInfo,
+        leaseTerms: {
+          ...parsedInfo.leaseTerms,
+          availableFrom: format(new Date(parsedInfo.leaseTerms.availableFrom), 'dd MMMM, yyyy'),
         },
-        userType: "apartment",
-      }).save();
+        roommates: [user.fullName],
+        images: imageUrls,
+      },
+      amenities: parsedAmenities,
+      details: parsedDetails,
+    }).save();
 
-      const newApartment = await new Apartment({
-        userInfo: newUser._id,
-        questionnaire: savedQuestionnaire._id,
-        apartmentInfo: {
-          ...apartmentInfo,
-          images: images || [],
-        },
-        existingRoommates: [newUser._id],
-      }).save();
+    user.profile = newApartment._id;
+    await user.save();
 
-      newUser.apartmentAssociate = newApartment._id;
-      await newUser.save();
+    res.status(201).json({
+      message: "Apartment registration completed successfully",
+      userId: user._id,
+      apartmentId: newApartment._id,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: err.message });
+  }
+};
 
-      registeredApartments.push({
-        userId: newUser._id,
-        apartmentId: newApartment._id,
+exports.logout = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "Could not log out, please try again" });
+    }
+    res.json({ message: "Logged out successfully" });
+  });
+};
+
+
+exports.bulkRegistration = async (req, res) => {
+  try {
+    const { registrations, userType } = req.body;
+    const results = [];
+
+    for (let registration of registrations) {
+      const { email, fullName, questionnaireAnswers, info, images } = registration;
+
+      // Create user
+      const user = new User({
+        fullName,
+        email,
+        userType,
+        picture: images && images.length > 0 ? images[0] : null,
       });
-    }
+      await user.save();
 
-    // Register roommates
+      // Create and save questionnaire
+      const parsedQuestionnaire = JSON.parse(questionnaireAnswers);
+      const savedQuestionnaire = await new Question(parsedQuestionnaire).save();
 
-    for (const roommateData of roommates) {
-      const { userInfo, questionnaireAnswers, personalInfo, image } =
-        roommateData;
+      let profile;
+      if (userType === 'roommate') {
+        const { personalInfo, interests, social } = registration;
+        profile = new Roommate({
+          user: user._id,
+          questionnaire: savedQuestionnaire._id,
+          personalInfo: { ...JSON.parse(personalInfo), name: fullName },
+          interests: JSON.parse(interests),
+          social: {
+            ...JSON.parse(social),
+            profileImage: images && images.length > 0 ? images[0] : null,
+          },
+        });
+      } else if (userType === 'apartment') {
+        const { amenities, details } = registration;
+        const parsedInfo = JSON.parse(info);
+        profile = new Apartment({
+          user: user._id,
+          questionnaire: savedQuestionnaire._id,
+          info: {
+            ...parsedInfo,
+            leaseTerms: {
+              ...parsedInfo.leaseTerms,
+              availableFrom: format(new Date(parsedInfo.leaseTerms.availableFrom), 'dd MMMM, yyyy'),
+            },
+            roommates: [user.fullName],
+            images: images || [],
+          },
+          amenities: JSON.parse(amenities),
+          details: JSON.parse(details),
+        });
+      }
 
-      const hashedPassword = await bcrypt.hash(userInfo.password, 10);
-      const savedQuestionnaire = await new Question(
-        questionnaireAnswers
-      ).save();
+      await profile.save();
 
-      const newRoommate = await new User({
-        userType: "roommate",
-        userInfo: {
-          fullName: userInfo.fullName,
-          email: userInfo.email,
-          password: hashedPassword,
-        },
-        questionnaire: savedQuestionnaire._id,
-        roommateInfo: {
-          fullName: userInfo.fullName,
-          image: image,
-          age: personalInfo.age,
-          gender: personalInfo.gender,
-          from: personalInfo.from,
-          occupation: personalInfo.occupation,
-          education: personalInfo.education,
-          hobbies: personalInfo.hobbies,
-          socialMedia: personalInfo.socialMedia,
-          availability: personalInfo.availability,
-          about: personalInfo.about,
-        },
-      }).save();
+      user.profile = profile._id;
+      await user.save();
 
-      registeredRoommates.push({
-        roommateId: newRoommate._id,
+      results.push({
+        email: user.email,
+        userId: user._id,
+        profileId: profile._id,
       });
     }
 
     res.status(201).json({
-      message: "Bulk registration successful",
-      registeredApartments,
-      registeredRoommates,
+      message: `Bulk ${userType} registration completed successfully`,
+      results,
     });
   } catch (err) {
-    console.error("Error in bulkRegister:", err);
+    console.error(err);
     res.status(400).json({ message: err.message });
   }
 };

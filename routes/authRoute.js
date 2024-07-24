@@ -2,37 +2,20 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const upload = require("../middleware/multer");
+const authController = require("../controllers/authController");
 
-const {
-  registerUser,
-  registerApartment,
-  loginUser,
-  logoutUser,
-  bulkRegister
-} = require("../controllers/authController");
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// New route for single-step registration
-router.post("/register/user", upload.array('images', 5), registerUser); 
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  authController.googleAuthCallback
+);
 
-// New route for single-step registration
-// router.route("/register/apartment").post(registerApartment);
-router.post("/register/apartment", upload.array('images', 5), registerApartment);
+router.get('/current-user', authController.getCurrentUser);
+router.post("/register/complete/roommate", upload.array('images', 1),authController.completeRoommateRegistration);
+router.post("/register/complete/apartment", upload.array('images', 5), authController.completeApartmentRegistration);
+router.post("/register/bulk", authController.bulkRegistration); 
 
-router.post('/register/bulk', bulkRegister);
-
-router
-  .route("/login")
-  .get((_req, res) => {
-    res.render("login");
-  })
-  .post(
-    passport.authenticate("local", {
-      failureFlash: true,
-      failureRedirect: "/admin/login",
-    }),
-    loginUser
-  );
-
-router.get("/logout", logoutUser);
+router.get('/logout', authController.logout);
 
 module.exports = router;
