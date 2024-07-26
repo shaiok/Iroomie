@@ -32,6 +32,32 @@ const roommateSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Question"
   },
+  preferences: {
+    rentRange: Number,
+    bedrooms: Number,
+    bathrooms: Number,
+    minSize: Number,
+    details: {
+      AC: Boolean,
+      Parking: Boolean,
+      Balcony: Boolean,
+      Furnished: Boolean,
+      Elevator: Boolean,
+      "Pet Friendly": Boolean,
+      "Smoking Allowed": Boolean,
+    },
+    leaseDuration: Number,
+    address: {
+      street: String,
+      city: String,
+      coordinates: {
+        type: [Number],
+        index: '2dsphere'
+      },
+    },
+    radius: Number,
+    moveInDateStart: Date,
+  },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
   dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
   matches: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],

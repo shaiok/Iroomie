@@ -64,6 +64,12 @@ const apartmentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Question"
   },
+  preferences: {
+    ageRange: [Number],
+    genderPreference: String,
+    occupations: [String],
+    sharedInterests: [String],
+  },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Roommate" }],
   dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Roommate" }],
   matches: [{ type: mongoose.Schema.Types.ObjectId, ref: "Roommate" }],

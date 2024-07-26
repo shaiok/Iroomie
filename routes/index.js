@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const authRoutes = require("./authRoute");
-const userRoutes = require("./usersRoute");
-const apartmentsRoutes = require("./apartmentsRoute");
+const roommateRoute = require("./roommateRoute");
+const apartmentRoute = require("./apartmentRoute");
 
 router.use("/auth", authRoutes);
-router.use("/users", userRoutes);
-router.use("/apartments", apartmentsRoutes);
+router.use("/roommates", roommateRoute);
+router.use("/apartments", apartmentRoute);
 
 module.exports = router;

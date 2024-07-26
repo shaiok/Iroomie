@@ -1,4 +1,4 @@
-const User = require('../models/roommateModel');
+const Roommate = require('../models/roommateModel');
 const Apartment = require('../models/apartmentModel');
 const calculateCompatibilityScore = require('../utils/matchingAlgorithm');
 
@@ -40,6 +40,53 @@ exports.updateUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.setRoommatePreferences = async (req, res) => {
+  try {
+    if (!req.session.profile) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const roommateId  = req.session.profile;
+
+    const {
+      rentRange,
+      bedrooms,
+      bathrooms,
+      minSize,
+      details,
+      leaseDuration,
+      address,
+      radius,
+      moveInDateStart
+    } = req.body;
+
+    const updatedRoommate = await Roommate.findByIdAndUpdate(
+      roommateId,
+      {
+        preferences: {
+          rentRange,
+          bedrooms,
+          bathrooms,
+          minSize,
+          details,
+          leaseDuration,
+          address,
+          radius,
+          moveInDateStart: moveInDateStart ? new Date(moveInDateStart) : null
+        }
+      },
+    );
+
+    if (!updatedRoommate) {
+      return res.status(404).json({ message: 'Roommate not found' });
+    }
+
+    res.status(200).json({ message: 'Roommate preferences updated successfully', roommate: updatedRoommate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error updating roommate preferences' });
   }
 };
 
