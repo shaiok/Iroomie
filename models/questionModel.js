@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const answerSchema = new mongoose.Schema({
-  answerIndex: { type: Number, min: 1, max: 5 },
+  value: { type: Number, min: 1, max: 5 },
   importance: { type: Number, min: 1, max: 5 },
 });
 

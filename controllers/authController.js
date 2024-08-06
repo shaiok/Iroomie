@@ -116,8 +116,6 @@ exports.completeApartmentRegistration = async (req, res) => {
 console.log(req.session.userRegitration);
     const { fullName = 'user' , email, googleId, picture } = req.session.userRegitration;
 
-
-
     const user = new User({
       fullName,
       email,
@@ -196,8 +194,8 @@ exports.bulkRegistration = async (req, res) => {
       await user.save();
 
       // Create and save questionnaire
-      const parsedQuestionnaire = JSON.parse(questionnaireAnswers);
-      const savedQuestionnaire = await new Question(parsedQuestionnaire).save();
+
+      const savedQuestionnaire = await new Question(questionnaireAnswers).save();
 
       let profile;
       if (userType === 'roommate') {

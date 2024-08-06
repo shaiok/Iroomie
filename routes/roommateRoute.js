@@ -6,16 +6,14 @@ const {
   setRoommatePreferences,
   deleteUser,
   getMatchingSuggestions,
-  associateUserToApartment,
   getAllUsers,
+  roommateActions
 } = require("../controllers/roommateController");
 
-router.route("/").get(getAllUsers);
-
+router.get("/",getAllUsers);
 router.put("/set-preferences", setRoommatePreferences);
+router.put("/set-action/:apartmentId", roommateActions);
 router.route("/:roommateId").get(getUser).put(updateUser).delete(deleteUser);
-
 router.route("/:roommateId/suggestions").get(getMatchingSuggestions);
 
-router.route("/:roommateId/:apartmentId/").post(associateUserToApartment),
-  (module.exports = router);
+module.exports = router;

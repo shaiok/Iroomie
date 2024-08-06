@@ -6,7 +6,6 @@ const calculateCompatibilityScore = require('../utils/matchingAlgorithm');
 exports.getAllUsers = async (req, res) => {
 
   try {
-    
     const users = await User.find({ 'userType': 'roommate' });
     res.json(users);
   } catch (err) {
@@ -135,54 +134,56 @@ exports.getMatchingSuggestions = async (req, res) => {
   }
 };
 
-exports.associateUserToApartment = async (req, res) => {
+exports.roommateActions = async (req, res) => {
   try {
-    const { userId, apartmentId } = req.params;
+    const { apartmentId } = req.params;
     const { action } = req.query;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const roommateId  = req.session.profile;
+
+    if (!req.session.profile) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
+    const roommate = await Roommate.findById(roommateId);
+    if (!roommate) {
+      return res.status(404).json({ message: 'roommate not found' });
+    }
+    
     const apartment = await Apartment.findById(apartmentId);
     if (!apartment) {
       return res.status(404).json({ message: 'Apartment not found' });
     }
 
-    http://dsgsdgsdg/dsdsgsdgsd/?action=like
-
     switch (action) {
       case 'like':
-        if (user.likes.includes(apartment._id)) {
-          return res.status(400).json({ message: 'Already liked' });
+        if (roommate.likes.includes(apartment._id)) {
+          return res.status(201).json({ message: 'Already liked' });
         }
-        if (user.dislikes.includes(apartment._id)) {
-          user.dislikes.pull(apartment._id);
+        if (roommate.dislikes.includes(apartment._id)) {
+          roommate.dislikes.pull(apartment._id);
         }
-        user.likes.push(apartment._id);
+        roommate.likes.push(apartment._id);
         break;
       case 'dislike':
-        if (user.dislikes.includes(apartment._id)) {
+        if (roommate.dislikes.includes(apartment._id)) {
           return res.status(400).json({ message: 'Already disliked' });
         }
-        if (user.likes.includes(apartment._id)) {
-          user.likes.pull(apartment._id);
+        if (roommate.likes.includes(apartment._id)) {
+          roommate.likes.pull(apartment._id);
         }
-        user.dislikes.push(apartment._id);
+        roommate.dislikes.push(apartment._id);
         break;
       case 'unlike':
-        if (!user.likes.includes(apartment._id)) {
+        if (!roommate.likes.includes(apartment._id)) {
           return res.status(400).json({ message: 'Not liked' });
         }
-        user.likes.pull(apartment._id);
+        roommate.likes.pull(apartment._id);
         break;
-      case 'message':
-        // Start conversation
-        break;
+      
       default:
         return res.status(400).json({ message: 'Invalid action' });
     }
 
-    await user.save();
+    await roommate.save();
     return res.json({ message: 'Action successful' });
   } catch (err) {
     console.error(err);

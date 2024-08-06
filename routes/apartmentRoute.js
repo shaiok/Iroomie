@@ -6,7 +6,6 @@ const {
   getApartment,
   updateApartment,
   setApartmentPreferences,
-  associateUserToApartment,
   deleteApartment,
 } = require("../controllers/apartmentController");
 
@@ -17,11 +16,5 @@ router
   .get(getApartment)
   .put(updateApartment)
   .delete(deleteApartment);
-
-
-router
-  .route("/:apartmentId/associate/:userId")
-  .post(associateUserToApartment)
-  .delete(associateUserToApartment);
 
 module.exports = router;
