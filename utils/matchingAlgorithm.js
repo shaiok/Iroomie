@@ -56,8 +56,7 @@ function calculateCompatibilityScore(userQuestions, candidateQuestions) {
     compatibilityScore += characteristicScore;
   }
 
-  const overallCompatibilityScore = compatibilityScore / totalCharacteristics;
-  console.log("overallCompatibilityScore",overallCompatibilityScore);
+  const overallCompatibilityScore = Math.round((compatibilityScore / totalCharacteristics) * 100);
   return overallCompatibilityScore;
 }
 

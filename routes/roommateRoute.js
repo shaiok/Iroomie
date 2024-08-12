@@ -1,19 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const {
-  getUser,
-  updateUser,
-  setRoommatePreferences,
-  deleteUser,
-  getMatchingSuggestions,
-  getAllUsers,
-  roommateActions
-} = require("../controllers/roommateController");
+// const express = require("express");
+// const router = express.Router();
+// const {
+//   getMatches,
+//   updateUser,
+//   setRoommatePreferences,
+//   getSuggestions,
+//   roommateActions
+// } = require("../controllers/roommateController");
 
-router.get("/",getAllUsers);
-router.put("/set-preferences", setRoommatePreferences);
-router.put("/set-action/:apartmentId", roommateActions);
-router.route("/:roommateId").get(getUser).put(updateUser).delete(deleteUser);
-router.route("/:roommateId/suggestions").get(getMatchingSuggestions);
+// router.get("/",getSuggestions);
+// router.get("/getMatches", getMatches);
+// router.put("/set-preferences", setRoommatePreferences);
+// router.put("/update-roommate", updateUser);
+// router.put("/set-action/:apartmentId", roommateActions);
 
-module.exports = router;
+
+// module.exports = router;

@@ -3,7 +3,7 @@ const User = require("../models/userModel");
 const Roommate = require("../models/roommateModel");
 const Apartment = require("../models/apartmentModel");
 const Question = require("../models/questionModel");
-const {format} = require('date-fns');
+const { format } = require("date-fns");
 
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
@@ -35,7 +35,7 @@ exports.googleAuthCallback = async (req, res) => {
 exports.getCurrentUser = (req, res) => {
   if (req.session.user) {
     const userType = req.session.user.userType;
-    if (userType === 'roommate') {
+    if (userType === "roommate") {
       Roommate.findById(req.session.profile)
         .populate("questionnaire")
         .then((roommate) => {
@@ -45,7 +45,7 @@ exports.getCurrentUser = (req, res) => {
           console.error(err);
           res.status(400).json({ message: err.message });
         });
-    } else if (userType === 'apartment') {
+    } else if (userType === "apartment") {
       Apartment.findById(req.session.profile)
         .populate("questionnaire")
         .then((apartment) => {
@@ -113,8 +113,13 @@ exports.completeApartmentRegistration = async (req, res) => {
   try {
     const { questionnaireAnswers, info, amenities, details } = req.body;
 
-console.log(req.session.userRegitration);
-    const { fullName = 'user' , email, googleId, picture } = req.session.userRegitration;
+    console.log(req.session.userRegitration);
+    const {
+      fullName = "user",
+      email,
+      googleId,
+      picture,
+    } = req.session.userRegitration;
 
     const user = new User({
       fullName,
@@ -141,7 +146,10 @@ console.log(req.session.userRegitration);
         ...parsedInfo,
         leaseTerms: {
           ...parsedInfo.leaseTerms,
-          availableFrom: format(new Date(parsedInfo.leaseTerms.availableFrom), 'dd MMMM, yyyy'),
+          availableFrom: format(
+            new Date(parsedInfo.leaseTerms.availableFrom),
+            "dd MMMM, yyyy"
+          ),
         },
         roommates: [user.fullName],
         images: imageUrls,
@@ -175,14 +183,14 @@ exports.logout = (req, res) => {
   });
 };
 
-
 exports.bulkRegistration = async (req, res) => {
   try {
     const { registrations, userType } = req.body;
     const results = [];
 
     for (let registration of registrations) {
-      const { email, fullName, questionnaireAnswers, info, images } = registration;
+      const { email, fullName, questionnaireAnswers, info, images } =
+        registration;
 
       // Create user
       const user = new User({
@@ -195,10 +203,12 @@ exports.bulkRegistration = async (req, res) => {
 
       // Create and save questionnaire
 
-      const savedQuestionnaire = await new Question(questionnaireAnswers).save();
+      const savedQuestionnaire = await new Question(
+        questionnaireAnswers
+      ).save();
 
       let profile;
-      if (userType === 'roommate') {
+      if (userType === "roommate") {
         const { personalInfo, interests, social } = registration;
         profile = new Roommate({
           user: user._id,
@@ -210,7 +220,7 @@ exports.bulkRegistration = async (req, res) => {
             profileImage: images && images.length > 0 ? images[0] : null,
           },
         });
-      } else if (userType === 'apartment') {
+      } else if (userType === "apartment") {
         const { amenities, details } = registration;
         const parsedInfo = JSON.parse(info);
         profile = new Apartment({
@@ -220,7 +230,10 @@ exports.bulkRegistration = async (req, res) => {
             ...parsedInfo,
             leaseTerms: {
               ...parsedInfo.leaseTerms,
-              availableFrom: format(new Date(parsedInfo.leaseTerms.availableFrom), 'dd MMMM, yyyy'),
+              availableFrom: format(
+                new Date(parsedInfo.leaseTerms.availableFrom),
+                "dd MMMM, yyyy"
+              ),
             },
             roommates: [user.fullName],
             images: images || [],
@@ -249,5 +262,46 @@ exports.bulkRegistration = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(400).json({ message: err.message });
+  }
+};
+
+
+
+
+exports.testRoommate = async (req, res) => {
+  try {
+    const user = await User.findById('66afab6144060cef69ec439a');
+    const roommate = await Roommate.findById('66afab6244060cef69ec43bc').populate("questionnaire");
+    
+    if (!user || !roommate) {
+      throw new Error('User or roommate profile not found');
+    }
+
+    req.session.user = user;
+    req.session.profile = roommate;
+
+    res.json({ user, profile: roommate });
+  } catch (error) {
+    console.error('Error in testRoommate:', error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.testApartment = async (req, res) => {
+  try {
+    const user = await User.findById('66b7d609cbe50ceed466e729');
+    const apartment = await Apartment.findById('66b7d60bcbe50ceed466e74b').populate("questionnaire");
+    
+    if (!user || !apartment) {
+      throw new Error('User or apartment profile not found');
+    }
+
+    req.session.user = user;
+    req.session.profile = apartment;
+
+    res.json({ user, profile: apartment });
+  } catch (error) {
+    console.error('Error in testApartment:', error);
+    res.status(400).json({ message: error.message });
   }
 };

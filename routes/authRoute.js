@@ -11,6 +11,8 @@ router.get('/google/callback',
   authController.googleAuthCallback
 );
 
+router.get('/testRoommate', authController.testRoommate);
+router.get('/testApartment', authController.testApartment);
 router.get('/current-user', authController.getCurrentUser);
 router.post("/register/complete/roommate", upload.array('images', 1),authController.completeRoommateRegistration);
 router.post("/register/complete/apartment", upload.array('images', 5), authController.completeApartmentRegistration);

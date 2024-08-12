@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const roommateSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: "User",
+    required: true,
   },
   personalInfo: {
     name: String,
@@ -30,13 +30,15 @@ const roommateSchema = new mongoose.Schema({
   },
   questionnaire: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Question"
+    ref: "Question",
   },
   preferences: {
-    rentRange: Number,
-    bedrooms: Number,
-    bathrooms: Number,
-    minSize: Number,
+    overview: {
+      rentRange: Number,
+      bedrooms: Number,
+      bathrooms: Number,
+      minSize: Number,
+    },
     details: {
       AC: Boolean,
       Parking: Boolean,
@@ -46,24 +48,27 @@ const roommateSchema = new mongoose.Schema({
       "Pet Friendly": Boolean,
       "Smoking Allowed": Boolean,
     },
-    leaseDuration: Number,
-    address: {
-      street: String,
-      city: String,
-      coordinates: {
-        type: [Number],
-        index: '2dsphere'
-      },
+    leaseDuration: {
+      duration: Number,
+      moveInDateStart: Date,
     },
-    radius: Number,
-    moveInDateStart: Date,
+
+    location: {
+      address: {
+        street: String,
+        city: String,
+        coordinates: {
+          type: [Number],
+          index: "2dsphere",
+        },
+      },
+      radius: Number,
+    },
   },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
   dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
   matches: [{ type: mongoose.Schema.Types.ObjectId, ref: "Apartment" }],
 });
-
-
 
 const Roommate = mongoose.model("Roommate", roommateSchema);
 module.exports = Roommate;

@@ -1,20 +1,16 @@
-const express = require("express");
-const router = express.Router();
+// const express = require("express");
+// const router = express.Router();
 
-const {
-  allApartments,
-  getApartment,
-  updateApartment,
-  setApartmentPreferences,
-  deleteApartment,
-} = require("../controllers/apartmentController");
+// const {
+//   allApartments,
+//   // getMatches,
+//   updateApartment,
+//   setApartmentPreferences,
+// } = require("../controllers/apartmentController");
 
-router.route("/").get(allApartments);
-router.put("/set-preferences", setApartmentPreferences);
-router
-  .route("/:apartmentId")
-  .get(getApartment)
-  .put(updateApartment)
-  .delete(deleteApartment);
+// router.get("/", allApartments);
+// // router.get("/getMatches", getMatches);
+// router.put("/set-preferences", setApartmentPreferences);
+// router.put("/update-apartment", updateApartment);
 
-module.exports = router;
+// module.exports = router;

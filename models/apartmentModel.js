@@ -65,8 +65,8 @@ const apartmentSchema = new mongoose.Schema({
     ref: "Question"
   },
   preferences: {
-    ageRange: [Number],
-    genderPreference: String,
+    ageRange: [Number, Number],
+    gender: [String],
     occupations: [String],
     sharedInterests: [String],
   },
