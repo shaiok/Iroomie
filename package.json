@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/whatwg-url": "^13.0.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.2.0",
     "connect-mongo": "^5.1.0",
@@ -30,5 +31,23 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.1",
+    "@types/method-override": "^3.0.0",
+    "@types/module-alias": "^2.0.4",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.16",
+    "@types/webidl-conversions": "^7.0.3",
+    "module-alias": "^2.2.3",
+    "typescript": "^5.3.3"
+  },
+  "_moduleAliases": {
+    "@": "./dist"
   }
 }
